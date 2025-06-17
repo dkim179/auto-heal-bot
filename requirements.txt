@@ -1,4 +1,0 @@
-pyautogui
-pydirectinput
-opencv-python
-numpy

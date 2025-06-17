@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import time
 import pydirectinput
+import keyboard
 
 hp_bar_region = (80, 8, 164, 6)
 mp_bar_region = (80, 22, 164, 6)
@@ -23,7 +24,6 @@ excluded_rgb_list = [
     (255, 255, 255), (12, 0, 0)
 ]
 
-# HP/MP 최대치 기준값 (HP/MP 100%일 때 측정된 값)
 HP_MAX_BASELINE = 87.5
 MP_MAX_BASELINE = 74.0
 
@@ -94,28 +94,50 @@ def use_f_potion_fast():
         pydirectinput.press('f')
     time.sleep(0.001)
 
-print("매크로 시작")
-
-cooldown = 1.5  # 1.5초 쿨타임
+# ------------------- 매크로 제어 로직 -------------------
+macro_running = False
+cooldown = 1.5
 last_hp_pot_time = 0
 last_mp_pot_time = 0
 
-while True:
-    hp = get_bar_percentage(hp_bar_region, hp_rgb_list, HP_MAX_BASELINE)
-    mp = get_bar_percentage(mp_bar_region, mp_rgb_list, MP_MAX_BASELINE)
+def start_macro():
+    global macro_running
+    if not macro_running:
+        macro_running = True
+        print("▶ 매크로 시작됨 (F1)")
 
-    print(f"HP: {hp:.1f}% | MP: {mp:.1f}%")
+def stop_macro():
+    global macro_running
+    if macro_running:
+        macro_running = False
+        print("⏹ 매크로 중지됨 (F2)")
 
-    now = time.time()
+keyboard.add_hotkey('F1', start_macro)
+keyboard.add_hotkey('F2', stop_macro)
 
-    if hp < 87 and now - last_hp_pot_time > cooldown:
-        use_g_potion_fast()
-        last_hp_pot_time = now
-        print(">> G키 빠르게 3번 (HP 87% 미만)")
+print("🟢 프로그램 실행됨 - F1: 시작 / F2: 중지 / Ctrl+C로 종료")
 
-    if mp < 87 and now - last_mp_pot_time > cooldown:
-        use_f_potion_fast()
-        last_mp_pot_time = now
-        print(">> F키 빠르게 3번 (MP 87% 미만)")
+try:
+    while True:
+        if macro_running:
+            hp = get_bar_percentage(hp_bar_region, hp_rgb_list, HP_MAX_BASELINE)
+            mp = get_bar_percentage(mp_bar_region, mp_rgb_list, MP_MAX_BASELINE)
 
-    time.sleep(0.5)
+            print(f"HP: {hp:.1f}% | MP: {mp:.1f}%")
+
+            now = time.time()
+
+            if hp < 80.3 and now - last_hp_pot_time > cooldown:
+                use_g_potion_fast()
+                last_hp_pot_time = now
+                print(">> G키 빠르게 3번 (HP 87% 미만)")
+
+            if mp < 90 and now - last_mp_pot_time > cooldown:
+                use_f_potion_fast()
+                last_mp_pot_time = now
+                print(">> F키 빠르게 3번 (MP 87% 미만)")
+
+        time.sleep(0.1)
+
+except KeyboardInterrupt:
+    print("\n❌ 프로그램 종료됨.")
