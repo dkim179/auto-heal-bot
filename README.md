@@ -1,30 +1,35 @@
-# auto-heal-bot
-Python automation tool that monitors health and mana bars in a game and automatically uses potions when thresholds are low.
-
 # 🧪 Auto Potion Macro for Online MMORPG Game
 
-A lightweight automation tool for the Korean MMORPG Ganme that monitors your character’s HP and MP bars and automatically uses potions when they fall below a specified threshold.
+A Python-based automation tool that monitors HP/MP bars in real-time and automatically uses potions during gameplay.
 
-- ✅ Uses HP (`G`) or MP (`F`) potions automatically
-- 🚀 Presses the potion key **3 times rapidly** for reliability
-- ⏱ Waits 1.5 seconds before next use (cooldown)
-- 🖥 Uses OpenCV + HSV color analysis to detect health/mana bars
+## ⚙️ Features
+- Detects HP/MP bar percentage with OpenCV and PyAutoGUI
+- Uses potions when HP < ???% or MP < ???%  ```user can choose set up the percentage```
+- Keyboard macro with custom hotkeys (F1 to start, F2 to stop)
+- Optimized for fast and responsive healing
 
----
+## 🔧 Requirements
+- Windows OS
+- Python 3.10+
+- Modules: `pyautogui`, `cv2`, `numpy`, `pydirectinput`, `keyboard`, `pillow`
 
 ## 🔧 Installation
 
-### 1. Open cmd using Administrator mode 
+- Clone this repo
+- cd auto-heal-bot
+- Open cmd using Administrator mode 
 
-### 2. Virtual Environment (Recommended)
+## Virtual Environment (Recommended)
 
-python -m venv venv
-venv\Scripts\activate
+- python -m venv venv
+- venv\Scripts\activate
 
-### 3. Install dependencies via pip:
+## Install dependencies via pip:
 
 pip install -r requirements.txt
+python "WhichEverFileYouWant".py
 
+## Important!!
 Adjust HP/MP region if needed
 The script uses hard-coded regions:
 
@@ -53,33 +58,9 @@ If HP or MP is below 87%, it:
 Presses G or F 3 times very quickly
 
 Waits 1.5 seconds before the next possible input
-
-
-**Hotkeys**
-
-G: Use HP potion
-
-F: Use MP potion
-
-Defined here:
-
-```
-python
-Copy
-Edit
-def use_g_potion_fast():
-    for _ in range(3):
-        pydirectinput.press('g')
-
-def use_f_potion_fast():
-    for _ in range(3):
-        pydirectinput.press('f')
-```
         
 Feel free to change keys to match your own bindings.
 
 ⚠️ Disclaimer
 This tool is for personal and educational use only.
 Use at your own discretion. Some games may consider automated input as a violation of terms of service, so please check the game's policy before using this tool in competitive or online environments.
-
-
