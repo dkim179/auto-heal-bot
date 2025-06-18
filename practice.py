@@ -5,6 +5,9 @@ import time
 import pydirectinput
 import keyboard
 
+# Time interval to check HP/MP (seconds)
+CHECK_INTERVAL = 0.05
+
 # Define screen regions for HP and MP bars (x, y, width, height)
 hp_bar_region = (80, 8, 164, 6)
 mp_bar_region = (80, 22, 164, 6)
@@ -97,22 +100,19 @@ def get_bar_percentage(region, gradient_rgb_list, max_baseline):
 
 def use_g_potion_fast():
     # Simulate pressing 'g' key rapidly 3 times with minimal delay
-    for _ in range(3):
-        pydirectinput.press('g')
-    time.sleep(0.001)
+    pydirectinput.press('g')
+    #time.sleep(0.0005)
+    pydirectinput.press('g')
 
 def use_f_potion_fast():
     # Simulate pressing 'f' key rapidly 3 times with minimal delay
-    for _ in range(3):
-        pydirectinput.press('f')
-    time.sleep(0.001)
+    pydirectinput.press('f')
+    #time.sleep(0.0005)
+    pydirectinput.press('f')
 
 # ------------------- Macro control and main loop -------------------
 
 macro_running = False  # Flag to track if macro is active
-cooldown = 1.5        # Minimum cooldown time between potion uses (seconds)
-last_hp_pot_time = 0  # Timestamp of last HP potion use
-last_mp_pot_time = 0  # Timestamp of last MP potion use
 
 def start_macro():
     # Start the macro if it's not running
@@ -143,21 +143,17 @@ try:
 
             print(f"HP: {hp:.1f}% | MP: {mp:.1f}%")
 
-            now = time.time()
-
             # Use HP potion if HP is below threshold and cooldown passed
-            if hp < 80.3 and now - last_hp_pot_time > cooldown:
+            if hp < 80.3:
                 use_g_potion_fast()
-                last_hp_pot_time = now
                 print(">> Press G key rapidly 3 times (When HP is under 80.3)")
 
             # Use MP potion if MP is below threshold and cooldown passed
-            if mp < 90 and now - last_mp_pot_time > cooldown:
+            if mp < 90:
                 use_f_potion_fast()
-                last_mp_pot_time = now
                 print(">> Press F key rapidly 3 times (When MP is under 90)")
 
-        time.sleep(0.1)
+        time.sleep(CHECK_INTERVAL)
 
 except KeyboardInterrupt:
     print("\n❌ Program has been terminated.")
