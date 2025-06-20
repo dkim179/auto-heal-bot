@@ -99,16 +99,16 @@ def get_bar_percentage(region, gradient_rgb_list, max_baseline):
     return corrected
 
 def use_g_potion_fast():
-    # Simulate pressing 'g' key rapidly 3 times with minimal delay
-    pydirectinput.press('g')
+    # Simulate pressing 'G' key rapidly 3 times with minimal delay
+    pydirectinput.press('G')
     #time.sleep(0.0005)
-    pydirectinput.press('g')
+    pydirectinput.press('G')
 
 def use_f_potion_fast():
-    # Simulate pressing 'f' key rapidly 3 times with minimal delay
-    pydirectinput.press('f')
+    # Simulate pressing 'F' key rapidly 3 times with minimal delay
+    pydirectinput.press('F')
     #time.sleep(0.0005)
-    pydirectinput.press('f')
+    pydirectinput.press('F')
 
 # ------------------- Macro control and main loop -------------------
 
