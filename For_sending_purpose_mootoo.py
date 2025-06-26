@@ -100,18 +100,18 @@ def get_bar_percentage(region, gradient_rgb_list, max_baseline):
     return corrected
 
 def use_hp_potion():
-    pydirectinput.press('g')
-    pydirectinput.press('g')
+    pydirectinput.press('del')
+    pydirectinput.press('del')
 
 def use_mp_potion():
-    pydirectinput.press('f')
-    pydirectinput.press('f')
+    pydirectinput.press('end')
+    pydirectinput.press('end')
 
 # ------------------- Macro control and main loop -------------------
 
 macro_running = False
-HP_THRESHOLD = 88.22 # 피 82.0%에 먹음 문대용임
-MP_THRESHOLD = 82 # 귀 58.6%에 먹음 문대용임
+HP_THRESHOLD = 81 # 피 82.0%에 먹음 문대용임
+MP_THRESHOLD = 85 # 귀 58.6%에 먹음 문대용임
 CHECK_INTERVAL = 0.05  # check every 50ms
 
 def start_macro():
@@ -141,11 +141,11 @@ try:
 
             if hp < HP_THRESHOLD:
                 use_hp_potion()
-                print(">> Use HP Potion (G)")
+                print(">> Use HP Potion (DEL)")
 
             if mp < MP_THRESHOLD:
                 use_mp_potion()
-                print(">> Use MP Potion (F)")
+                print(">> Use MP Potion (END)")
 
         time.sleep(CHECK_INTERVAL)
 

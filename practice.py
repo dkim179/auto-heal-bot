@@ -1,12 +1,11 @@
-import pyautogui
 import cv2
 import numpy as np
 import time
+import mss
 import pydirectinput
 import keyboard
 
-# Time interval to check HP/MP (seconds)
-CHECK_INTERVAL = 0.05
+pydirectinput.PAUSE = 0.065
 
 # Define screen regions for HP and MP bars (x, y, width, height)
 hp_bar_region = (80, 8, 164, 6)
@@ -35,7 +34,6 @@ HP_MAX_BASELINE = 87.5
 MP_MAX_BASELINE = 74.0
 
 def rgb_to_hsv_range(r, g, b, tol=10):
-    # Convert RGB to HSV and create a tolerance range for color detection
     color = np.uint8([[[b, g, r]]])
     hsv = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)[0][0]
     hsv_int = hsv.astype(int)
@@ -44,7 +42,6 @@ def rgb_to_hsv_range(r, g, b, tol=10):
     return lower, upper
 
 def convert_rgb_list_to_hsv_ranges(rgb_list, tol=10):
-    # Convert a list of RGB colors into corresponding HSV ranges with tolerance
     lowers, uppers = [], []
     for rgb in rgb_list:
         low, up = rgb_to_hsv_range(*rgb, tol=tol)
@@ -52,11 +49,10 @@ def convert_rgb_list_to_hsv_ranges(rgb_list, tol=10):
         uppers.append(up)
     return lowers, uppers
 
-# Precompute HSV ranges for colors to exclude
+# Precompute HSV ranges for excluded colors
 excluded_lowers, excluded_uppers = convert_rgb_list_to_hsv_ranges(excluded_rgb_list, tol=5)
 
 def mask_excluded_colors(hsv_img):
-    # Generate a mask for colors to exclude from detection (background, etc.)
     mask = np.zeros(hsv_img.shape[:2], dtype=np.uint8)
     for low, up in zip(excluded_lowers, excluded_uppers):
         temp_mask = cv2.inRange(hsv_img, low, up)
@@ -64,7 +60,6 @@ def mask_excluded_colors(hsv_img):
     return mask
 
 def apply_gradient_over_mask(img, mask, gradient_rgb_list):
-    # Replace masked pixels with the corresponding gradient color vertically
     h, w = img.shape[:2]
     for y in range(h):
         color_rgb = gradient_rgb_list[y]
@@ -74,10 +69,17 @@ def apply_gradient_over_mask(img, mask, gradient_rgb_list):
                 img[y, x] = bgr_color
     return img
 
+def capture_region(region):
+    x, y, width, height = region
+    with mss.mss() as sct:
+        monitor = {"top": y, "left": x, "width": width, "height": height}
+        screenshot = sct.grab(monitor)
+        img = np.array(screenshot)
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+        return img
+
 def get_bar_percentage(region, gradient_rgb_list, max_baseline):
-    # Capture the HP/MP bar region, mask excluded colors, and calculate filled percentage
-    screenshot = pyautogui.screenshot(region=region)
-    img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    img = capture_region(region)
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     excluded_mask = mask_excluded_colors(hsv_img)
@@ -94,66 +96,58 @@ def get_bar_percentage(region, gradient_rgb_list, max_baseline):
     total_pixels = region[2] * region[3]
     raw_percentage = (colored_pixels / total_pixels) * 100
 
-    # Normalize raw percentage based on max baseline to get actual bar percentage
     corrected = min((raw_percentage / max_baseline) * 100, 100)
     return corrected
 
-def use_g_potion_fast():
-    # Simulate pressing 'G' key rapidly 3 times with minimal delay
-    pydirectinput.press('G')
-    #time.sleep(0.0005)
-    pydirectinput.press('G')
+def use_hp_potion():
+    pydirectinput.press('g')
+    pydirectinput.press('g')
 
-def use_f_potion_fast():
-    # Simulate pressing 'F' key rapidly 3 times with minimal delay
-    pydirectinput.press('F')
-    #time.sleep(0.0005)
-    pydirectinput.press('F')
+def use_mp_potion():
+    pydirectinput.press('f')
+    pydirectinput.press('f')
 
 # ------------------- Macro control and main loop -------------------
 
-macro_running = False  # Flag to track if macro is active
+macro_running = False
+HP_THRESHOLD = 81 #When HP is at 24000
+MP_THRESHOLD = 85 #When MP is at 12000
+CHECK_INTERVAL = 0.05  # check every 50ms
 
 def start_macro():
-    # Start the macro if it's not running
     global macro_running
     if not macro_running:
         macro_running = True
         print("▶ Start (F1)")
 
 def stop_macro():
-    # Stop the macro if it is running
     global macro_running
     if macro_running:
         macro_running = False
         print("⏹ Pause (F2)")
 
-# Register hotkeys for macro control
 keyboard.add_hotkey('F1', start_macro)
 keyboard.add_hotkey('F2', stop_macro)
 
-print("🟢 Program has been started - F1: Start / F2: Pause / End Program with Ctrl+C")
+print("🟢 Program has been started - F1: Start / F2: Pause / Ctrl+C to exit")
 
 try:
     while True:
         if macro_running:
-            # Get current HP and MP bar percentages
             hp = get_bar_percentage(hp_bar_region, hp_rgb_list, HP_MAX_BASELINE)
             mp = get_bar_percentage(mp_bar_region, mp_rgb_list, MP_MAX_BASELINE)
 
             print(f"HP: {hp:.1f}% | MP: {mp:.1f}%")
 
-            # Use HP potion if HP is below threshold and cooldown passed
-            if hp < 80.3:
-                use_g_potion_fast()
-                print(">> Press G key rapidly 3 times (When HP is under 80.3)")
+            if hp < HP_THRESHOLD:
+                use_hp_potion()
+                print(">> Use HP Potion (G)")
 
-            # Use MP potion if MP is below threshold and cooldown passed
-            if mp < 90:
-                use_f_potion_fast()
-                print(">> Press F key rapidly 3 times (When MP is under 90)")
+            if mp < MP_THRESHOLD:
+                use_mp_potion()
+                print(">> Use MP Potion (F)")
 
         time.sleep(CHECK_INTERVAL)
 
 except KeyboardInterrupt:
-    print("\n❌ Program has been terminated.")
+    print("\n❌ Program terminated.")
